@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業勾選表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            /* 淺青色點狀背景與邊緣微黃漸層效果 */
+            background-color: #f0fdf8;
+            background-image:
+                radial-gradient(circle at top right, #fffbeb 0%, transparent 40%),
+                radial-gradient(circle at bottom left, #fffbeb 0%, transparent 40%),
+                radial-gradient(#c6e6df 2px, transparent 2px);
+            background-size: 100% 100%, 100% 100%, 20px 20px;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 隱藏捲軸但保持可以捲動 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .tooth-item {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+       
+        .tooth-item:hover {
+            transform: scale(1.08);
+        }
+
+        .tooth-item:active {
+            transform: scale(0.95);
+        }
+
+        /* 完成狀態的作業簿變色 */
+        .tooth-item.completed .book-cover {
+            fill: #fef08a !important; /* 變成黃色 */
+        }
+       
+        .tooth-item.completed .book-face {
+            transform: translateY(-2px); /* 臉部微調上揚，感覺開心 */
+        }
+
+        /* 嘴巴表情切換設定 */
+        .mouth-sad, .mouth-happy {
+            transition: opacity 0.3s ease;
+        }
+        .tooth-item .mouth-happy {
+            opacity: 0;
+        }
+        .tooth-item.completed .mouth-happy {
+            opacity: 1;
+        }
+        .tooth-item.completed .mouth-sad {
+            opacity: 0;
+        }
+
+        /* 左側大星星裝飾 */
+        .bg-star {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 5rem;
+            color: #fef08a;
+            transform: rotate(15deg);
+            z-index: 0;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-[1000px] w-full mx-auto flex flex-col items-center gap-6">
+       
+        <!-- 頂部標題區域 -->
+        <div class="text-center w-full flex flex-col items-center gap-3">
+            <h1 class="inline-block bg-white text-[#f43f5e] border-[4px] border-[#fbcfe8] rounded-full px-8 py-3 text-2xl md:text-3xl font-black shadow-sm">
+                作業準時交，成績步步高
+            </h1>
+            <div id="date-display" class="text-sm md:text-base font-bold text-[#3b82f6] bg-[#e0f2fe] inline-block px-6 py-1.5 rounded-full">
+                2026年6月12日 星期五
+            </div>
+            <div class="flex gap-4 text-sm md:text-base font-bold mt-1">
+                <div class="bg-[#dcfce7] text-[#166534] px-5 py-1.5 rounded-full shadow-sm border-2 border-[#bbf7d0]">
+                    已交: <span id="submitted-count" class="text-xl">0</span> 人
+                </div>
+                <div class="bg-[#fee2e2] text-[#991b1b] px-5 py-1.5 rounded-full shadow-sm border-2 border-[#fecaca]">
+                    缺交: <span id="missing-count" class="text-xl">30</span> 人
+                </div>
+            </div>
+        </div>
+
+        <!-- 內容雙欄區塊 -->
+        <div class="w-full flex flex-col md:flex-row gap-6 items-stretch justify-center mt-2">
+           
+            <!-- 左側：小天使提醒區 (現改為久于老師提醒區) -->
+            <div class="w-full md:w-[300px] shrink-0 bg-[#fffbeb] border-[4px] border-[#fde047] rounded-3xl p-5 shadow-sm relative flex flex-col">
+                <!-- 右上角裝飾大星星 -->
+                <div class="bg-star">⭐</div>
+               
+                <h2 class="text-lg font-bold text-[#b45309] mb-5 text-center bg-[#fde047] py-2 rounded-xl shadow-sm relative z-10 flex items-center justify-center gap-2">
+                    <span class="text-xl">📌</span> 久于老師提醒區
+                </h2>
+
+                <!-- 任務清單 -->
+                <div class="flex flex-col gap-3 mb-6 relative z-10">
+                    <div class="bg-white px-4 py-3 rounded-xl shadow-sm text-[#475569] font-bold flex items-center gap-3 text-sm">
+                        <span class="text-xl">📝</span> 答案要訂正
+                    </div>
+                    <div class="bg-white px-4 py-3 rounded-xl shadow-sm text-[#475569] font-bold flex items-center gap-3 text-sm">
+                        <span class="text-xl">✏️</span> 錯字要更正
+                    </div>
+                    <div class="bg-white px-4 py-3 rounded-xl shadow-sm text-[#475569] font-bold flex items-center gap-3 text-sm">
+                        <span class="text-xl">✅</span> 老師寫OK
+                    </div>
+                </div>
+
+                <!-- 倒數計時區 -->
+                <div class="mt-auto bg-white border-2 border-[#bfdbfe] rounded-2xl p-4 text-center relative z-10">
+                    <div class="flex items-center justify-center gap-2 mb-2">
+                        <span class="text-lg">⏱️</span>
+                        <span class="text-[#64748b] font-bold text-sm">倒數</span>
+                        <select id="timer-select" class="bg-[#f1f5f9] border border-[#cbd5e1] text-[#475569] text-xs rounded md:text-sm focus:ring-blue-500 focus:border-blue-500 block px-2 py-1 font-bold outline-none cursor-pointer">
+                            <option value="1">1 分鐘</option>
+                            <option value="2">2 分鐘</option>
+                            <option value="3" selected>3 分鐘</option>
+                            <option value="5">5 分鐘</option>
+                        </select>
+                    </div>
+                   
+                    <div id="time-display" class="text-4xl font-black text-[#334155] tracking-widest my-3 font-mono">
+                        03:00
+                    </div>
+                   
+                    <div class="flex justify-center gap-2 mt-4">
+                        <button id="start-btn" class="bg-[#4ade80] hover:bg-[#22c55e] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm transition w-full text-sm">
+                            開始
+                        </button>
+                        <button id="reset-timer-btn" class="bg-[#94a3b8] hover:bg-[#64748b] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm transition w-full text-sm">
+                            重設
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 底部裝飾字 -->
+                <div class="bg-[#fde047] text-[#ca8a04] font-black text-center mt-5 py-2 rounded-xl text-xs tracking-widest shadow-sm relative z-10">
+                    KEEP CLEAN & HEALTHY
+                </div>
+            </div>
+            <!-- 右側：班級潔牙/作業任務表 -->
+            <div class="w-full md:flex-1 bg-white border-[4px] border-[#e0f2fe] rounded-3xl p-6 shadow-sm">
+                <!-- 標題與進度 -->
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b-2 border-dashed border-[#f1f5f9] gap-4">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <span class="text-xl md:text-xl">✨</span>
+                        <input type="text" value="班級作業繳交表" class="text-xl md:text-xl font-bold text-[#3b82f6] bg-transparent border-b-2 border-transparent hover:border-[#bfdbfe] focus:border-[#3b82f6] outline-none px-2 py-1 w-full sm:w-[250px] transition-colors" placeholder="輸入標題...">
+                    </div>
+                   
+                    <div class="flex items-center gap-3 flex-wrap justify-center">
+                        <div class="flex items-center gap-2 bg-[#f1f5f9] px-3 py-1 rounded-full shadow-inner border border-[#e2e8f0]">
+                            <span class="text-xs font-bold text-[#64748b]">總人數:</span>
+                            <input type="number" id="total-students-input" value="30" min="1" max="100" class="w-10 bg-white text-center text-xs font-bold text-[#3b82f6] border border-[#cbd5e1] rounded outline-none">
+                        </div>
+                        <div id="progress-text" class="bg-[#f1f5f9] text-[#64748b] font-bold px-3 py-1 rounded-full text-xs shadow-inner border border-[#e2e8f0]">
+                            完成度: 0/30
+                        </div>
+                        <button id="reset-teeth-btn" class="bg-[#ef4444] hover:bg-[#dc2626] text-white font-bold py-1 px-3 rounded-full text-xs shadow-sm transition flex items-center gap-1">
+                            <span>🔄</span> 重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 牙齒網格 6行5列 -->
+                <div id="teeth-container" class="grid grid-cols-5 md:grid-cols-6 gap-3 justify-items-center">
+                    <!-- Javascript 將在此處生成 30 顆牙齒 -->
+                </div>
+            </div>
+
+        </div> <!-- 結束 內容雙欄區塊 -->
+    </div> <!-- 結束 max-w主容器 -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+           
+            /* ==========================================
+               1. 初始化日期 (可依需求固定或抓當天)
+               ========================================== */
+            const dateDisplay = document.getElementById('date-display');
+            // 若要維持圖片上的字樣，可直接寫死；以下提供自動抓取當天的邏輯：
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            const date = today.getDate();
+            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const dayName = days[today.getDay()];
+            // 這裡為了還原圖片，我們先放當天日期
+            dateDisplay.textContent = `${year}年${month}月${date}日 ${dayName}`;
+
+            /* ==========================================
+               2. 倒數計時器邏輯
+               ========================================== */
+            let timerDuration = 3 * 60; // 預設 3 分鐘
+            let timeRemaining = timerDuration;
+            let timerInterval = null;
+
+            const timerDisplay = document.getElementById('time-display');
+            const startBtn = document.getElementById('start-btn');
+            const resetTimerBtn = document.getElementById('reset-timer-btn');
+            const timeSelect = document.getElementById('timer-select');
+
+            function updateTimerDisplay() {
+                let m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+                let s = (timeRemaining % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${m}:${s}`;
+            }
+
+            startBtn.addEventListener('click', () => {
+                if (timerInterval) {
+                    // 暫停狀態
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    startBtn.textContent = '繼續';
+                    startBtn.classList.replace('bg-[#facc15]', 'bg-[#4ade80]');
+                    startBtn.classList.replace('hover:bg-[#eab308]', 'hover:bg-[#22c55e]');
+                } else {
+                    // 開始/繼續狀態
+                    if (timeRemaining <= 0) return;
+                   
+                    startBtn.textContent = '暫停';
+                    startBtn.classList.replace('bg-[#4ade80]', 'bg-[#facc15]');
+                    startBtn.classList.replace('hover:bg-[#22c55e]', 'hover:bg-[#eab308]');
+                   
+                    timerInterval = setInterval(() => {
+                        if (timeRemaining > 0) {
+                            timeRemaining--;
+                            updateTimerDisplay();
+                        } else {
+                            // 時間到
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            startBtn.textContent = '時間到！';
+                            startBtn.classList.replace('bg-[#facc15]', 'bg-[#94a3b8]');
+                            startBtn.classList.replace('hover:bg-[#eab308]', 'hover:bg-[#64748b]');
+                           
+                            // 時間到閃爍
+                            let flash = setInterval(() => {
+                                timerDisplay.style.color = timerDisplay.style.color === 'rgb(239, 68, 68)' ? '#334155' : '#ef4444';
+                            }, 500);
+                            setTimeout(() => {
+                                clearInterval(flash);
+                                timerDisplay.style.color = '#334155';
+                            }, 3000);
+                        }
+                    }, 1000);
+                }
+            });
+
+            resetTimerBtn.addEventListener('click', () => {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timeRemaining = parseInt(timeSelect.value) * 60;
+                updateTimerDisplay();
+                startBtn.textContent = '開始';
+                startBtn.className = 'bg-[#4ade80] hover:bg-[#22c55e] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm transition w-full text-sm';
+            });
+
+            timeSelect.addEventListener('change', () => {
+                timeRemaining = parseInt(timeSelect.value) * 60;
+                updateTimerDisplay();
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    startBtn.textContent = '開始';
+                    startBtn.className = 'bg-[#4ade80] hover:bg-[#22c55e] text-white font-bold py-1.5 px-4 rounded-lg shadow-sm transition w-full text-sm';
+                }
+            });
+
+            /* ==========================================
+               3. 牙齒/作業簿網格邏輯 (生成與點擊互動)
+               ========================================== */
+            const teethContainer = document.getElementById('teeth-container');
+            const progressText = document.getElementById('progress-text');
+            const resetTeethBtn = document.getElementById('reset-teeth-btn');
+            const totalStudentsInput = document.getElementById('total-students-input');
+            const submittedCount = document.getElementById('submitted-count');
+            const missingCount = document.getElementById('missing-count');
+            let totalTeeth = parseInt(totalStudentsInput.value) || 30;
+
+            // 生成單個可愛作業簿的 SVG 模板
+            function getToothSVG(num) {
+                return `
+                <div class="tooth-item relative w-[3.5rem] h-[4rem] md:w-[4rem] md:h-[4.8rem] flex flex-col items-center justify-center" data-id="${num}">
+                    <svg width="100%" height="100%" viewBox="0 0 40 46" class="drop-shadow-sm overflow-visible">
+                        <!-- 作業簿書籤 -->
+                        <path d="M 28 5 L 28 15 L 32 12 L 36 15 L 36 5 Z" fill="#f87171" />
+                        <!-- 作業簿封面 -->
+                        <rect x="8" y="5" width="28" height="36" rx="3" class="book-cover transition-colors duration-300" fill="#bae6fd" stroke="#64748b" stroke-width="1.5" />
+                        <!-- 書脊/線圈 -->
+                        <rect x="5" y="8" width="6" height="4" rx="2" fill="#e2e8f0" stroke="#64748b" stroke-width="1" />
+                        <rect x="5" y="18" width="6" height="4" rx="2" fill="#e2e8f0" stroke="#64748b" stroke-width="1" />
+                        <rect x="5" y="28" width="6" height="4" rx="2" fill="#e2e8f0" stroke="#64748b" stroke-width="1" />
+                        <!-- 封面裝飾線 -->
+                        <line x1="13" y1="12" x2="25" y2="12" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2" />
+                       
+                        <!-- 臉部群組 -->
+                        <g class="book-face transition-transform duration-300">
+                            <!-- 眼睛 -->
+                            <circle cx="17" cy="22" r="1.5" fill="#334155" />
+                            <circle cx="25" cy="22" r="1.5" fill="#334155" />
+                            <!-- 腮紅 -->
+                            <ellipse cx="14" cy="25" rx="2" ry="1.2" fill="#fecdd3" />
+                            <ellipse cx="28" cy="25" rx="2" ry="1.2" fill="#fecdd3" />
+                            <!-- 嘴巴 (哭臉與笑臉切換) -->
+                            <path class="mouth-sad" d="M 19 27 Q 21 24.5, 23 27" fill="none" stroke="#334155" stroke-width="1" stroke-linecap="round" />
+                            <path class="mouth-happy" d="M 19 25.5 Q 21 28.5, 23 25.5" fill="none" stroke="#334155" stroke-width="1" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                    <!-- 封面上的編號 -->
+                    <span class="absolute top-[62%] text-[11px] md:text-[12px] font-extrabold text-[#64748b] pointer-events-none">${num}</span>
+                </div>
+                `;
+            }
+
+            // 初始化生成作業簿網格
+            function renderTeethGrid() {
+                teethContainer.innerHTML = ''; // 清空現有網格
+                for (let i = 1; i <= totalTeeth; i++) {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = getToothSVG(i);
+                    const toothElement = wrapper.firstElementChild;
+                   
+                    // 點擊事件：切換完成狀態
+                    toothElement.addEventListener('click', function() {
+                        this.classList.toggle('completed');
+                        updateProgress();
+                    });
+                   
+                    teethContainer.appendChild(toothElement);
+                }
+                updateProgress(); // 生成後更新狀態
+            }
+
+            // 更新進度與人數統計
+            function updateProgress() {
+                const completedCount = document.querySelectorAll('.tooth-item.completed').length;
+                const missedCount = totalTeeth - completedCount;
+                progressText.textContent = `完成度: ${completedCount}/${totalTeeth}`;
+                submittedCount.textContent = completedCount;
+                missingCount.textContent = missedCount;
+            }
+
+            // 監聽總人數變更
+            totalStudentsInput.addEventListener('change', (e) => {
+                let newTotal = parseInt(e.target.value);
+                if (!isNaN(newTotal) && newTotal > 0) {
+                    totalTeeth = newTotal;
+                    renderTeethGrid();
+                } else {
+                    e.target.value = totalTeeth; // 若輸入不合法則還原
+                }
+            });
+
+            // 全部重置按鈕
+            resetTeethBtn.addEventListener('click', () => {
+                const allTeeth = document.querySelectorAll('.tooth-item');
+                allTeeth.forEach(t => t.classList.remove('completed'));
+                updateProgress();
+            });
+           
+            // 初次載入渲染
+            renderTeethGrid();
+
+        });
+    </script>
+</body>
+</html>
